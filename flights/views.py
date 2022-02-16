@@ -1,9 +1,9 @@
-from django.shortcuts import render
-from . models import Flight
+from django.shortcuts import render, redirect
+from . models import Flight, Passenger
 
 
 def index(request):
-    return render(request, 'flights/index.html', {
+    return render(request, 'flights/login.html', {
         'flights': Flight.objects.all()
     })
 
@@ -12,5 +12,14 @@ def flight(request, flight_id):
     flight = Flight.objects.get(pk=flight_id)
     return render(request, 'flights/flight.html', {
         'flight': flight,
-        'passengers': flight.passengers.all()
+        'passengers': flight.passengers.all(),
+        'non_passengers': Passenger.objects.exclude(flights=flight).all()
     })
+
+
+def book(request, flight_id):
+    if request.method == 'POST':
+        flight = Flight.object.get(pk=flight_id)
+        passenger = Passenger.objects.get(pk=int(request.POST['passenger']))
+        passenger.flights.add(flight)
+        return redirect('flight')
